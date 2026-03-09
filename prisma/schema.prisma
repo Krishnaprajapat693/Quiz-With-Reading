@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id             String       @id @default(cuid())
+  email          String       @unique
+  name           String?
+  password       String
+  role           Role         @default(USER)
+  
+  // Self-relation: Admin can have many users
+  adminId        String?
+  admin          User?        @relation("AdminUsers", fields: [adminId], references: [id])
+  users          User[]       @relation("AdminUsers")
+  
+  totalTimeSpent Int          @default(0) // time in seconds
+  sessions       SessionLog[]
+  quizAttempts   QuizAttempt[]
+  
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model SessionLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startTime DateTime @default(now())
+  endTime   DateTime @updatedAt
+  duration  Int      @default(0) // time in seconds for this session ping
+}
+
+model QuizAttempt {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic          String
+  difficulty     String
+  score          Int
+  totalQuestions Int
+  review         String?   @db.Text
+  weakAreas      String[]  @default([])
+  learningTips   String[]  @default([])
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
