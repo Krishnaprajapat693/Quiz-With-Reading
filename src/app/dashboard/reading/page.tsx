@@ -1,12 +1,12 @@
 "use client"
 
-import { useState, useEffect, useRef, useMemo } from "react"
+import { useState, useEffect, useRef, useMemo, Suspense } from "react"
 import ReactMarkdown from "react-markdown"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { StructuredDoc, DocSection } from "@/lib/groq"
 
-export default function ReadingPage() {
+function ReadingContent() {
     const searchParams = useSearchParams()
     const topicParam = searchParams.get("topic")
 
@@ -346,6 +346,14 @@ export default function ReadingPage() {
                 )}
             </main>
         </div>
+    )
+}
+
+export default function ReadingPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center"><div className="w-12 h-12 border-2 border-ocean/10 border-t-ocean rounded-full animate-spin"></div></div>}>
+            <ReadingContent />
+        </Suspense>
     )
 }
 
